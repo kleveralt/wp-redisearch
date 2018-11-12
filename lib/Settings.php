@@ -56,6 +56,14 @@ class Settings {
   */
   public static function get( $option, $default = null ) {
     $option_value = get_option( $option, $default );
+    /**
+     * Sometimes, when user clicks on Save Changes without inserting value in option, its value stores as empty into database.
+     * So we need an extra condition to check if value is empty.
+     * 
+     * @since 0.2.1
+     */
+    $option_value = empty( $option_value ) ? $default : $option_value;
+    
     return $option_value;
   }
 
@@ -67,11 +75,22 @@ class Settings {
   */
   public static function query_args() {
     $post_types = self::get( 'wp_redisearch_post_types' );
+
     if ( isset( $post_types ) && !empty( $post_types ) ) {
       $post_types = array_keys( $post_types );
     } elseif ( !isset( $post_types ) || empty( $post_types ) ) {
       $post_types = array( 'post' );
     }
+
+    /**
+     * Modify indexable post types
+     * 
+     * @since 0.2.1
+     * @param array $post_types        Default terms list
+     * @return array $post_types       Modified taxobomy terms list
+     */
+    $post_types = apply_filters( 'wp_redisearch_indexable_post_types', $post_types );
+    
     return array(
 			'post_type'              => $post_types,
 			'post_status'            => array('publish'),

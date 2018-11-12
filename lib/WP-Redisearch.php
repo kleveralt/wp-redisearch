@@ -10,6 +10,7 @@ use WPRedisearch\Settings;
 use WPRedisearch\Features;
 use WPRedisearch\Features\Synonym;
 use WPRedisearch\Features\LiveSearch;
+use WPRedisearch\Features\WooCommerce;
 
 /**
  * WPRedisearch Class.
@@ -66,9 +67,17 @@ class WPRedisearch {
   private $search_query_posts = array();
 
   public function __construct() {
+    $this->wp_redisearch_admin_notice();
+    // First, initiate features
+    if ( !self::$serverException && !self::$moduleException ) {
+      Features::init();
+      new LiveSearch;
+      new Synonym;
+      new WooCommerce;
+    }
+
     $this->admin = new Admin;
     $this->wp_redisearch_handle_ajax_requests();
-    $this->wp_redisearch_admin_notice();
     // Do the search
     if ( !self::$redisearchException ) {
       add_filter( 'posts_request', array( $this, 'wp_redisearch_posts_request' ), 10, 2 );
@@ -76,9 +85,6 @@ class WPRedisearch {
       add_action( 'wp_insert_post', array( $this->admin, 'wp_redisearch_index_post_on_publish' ), 10, 3 );
       add_action( 'save_post', array( $this->admin, 'wp_redisearch_index_post_on_publish' ), 10, 3 );
       
-      Features::init();
-      new LiveSearch;
-      new Synonym;
     }
 
   }
@@ -165,7 +171,7 @@ class WPRedisearch {
   * @return
   */
   public static function redisearch_not_loaded_notice() {
-    $redis_settings_page = admin_url('admin.php?page=wp-redisearch');
+    $redis_settings_page = admin_url('admin.php?page=redisearch');
     ?>
     <div class="notice notice-error is-dismissible">
       <p><?php printf( __( 'RediSearch module not loaded! go to <a href="%s">settings</a>', 'wp-redisearch' ), $redis_settings_page); ?></p>
@@ -180,7 +186,7 @@ class WPRedisearch {
   * @return
   */
   public static function redisearch_index_not_exist_notice() {
-    $redis_settings_page = admin_url('admin.php?page=wp-redisearch');
+    $redis_settings_page = admin_url('admin.php?page=redisearch');
     ?>
     <div class="notice notice-error is-dismissible">
       <p><?php printf( __( 'Redis server is running and RediSearch module is loaded! But your index not exist. This mean your site never been indexed or for some reasons, the index have been deleted. Please go to <a href="%s">settings page</a> and re-index your website.', 'wp-redisearch' ), $redis_settings_page); ?></p>

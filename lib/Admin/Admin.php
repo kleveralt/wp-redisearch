@@ -113,7 +113,7 @@ class Admin {
             .indexing-options{margin-top:20px;}
             .indexing-btn{position:relative;cursor: pointer}
             #indexingProgress {position: relative;background:#eee;margin-top:30px;height:20px;width: 100%;}
-            #indexBar {width: 1%;height: 100%;background-color: #0dbcac;transition: all linear 0.1s;}
+            #indexBar {width: 1%;max-width:100%;height: 100%;background-color: #0dbcac;transition: all linear 0.1s;}
             span#indexedStat {position: absolute;bottom: 0;right: 4px;line-height:20px;color: #000000;}
           </style>
         </div>
@@ -169,6 +169,14 @@ EOT;
         'show_ui' => true,
       )
     );
+    /**
+     * We exclude product from indexable post types, since woocommerce support added via Features.
+     * 
+     * @since 0.2.1
+     */
+    if ( function_exists( 'array_diff' ) ) {
+      $post_types = array_diff( $post_types, array( 'product' ) );
+    }
     return $post_types;
   }
 
@@ -207,7 +215,7 @@ EOT;
       'nonce'           => wp_create_nonce( 'wprds_dashboard_nonce' )
 		);
     wp_localize_script( 'wp_redisearch_admin_js', 'wpRds', $localized_data );
-    wp_enqueue_style( 'wp_redisearch_admin_styles', WPRS_URL . 'lib/admin/css/admin.css', false, 20180914 );
+    wp_enqueue_style( 'wp_redisearch_admin_styles', WPRS_URL . 'lib/admin/css/admin.css', false, WPRS_VERSION );
   }
 
   /**
